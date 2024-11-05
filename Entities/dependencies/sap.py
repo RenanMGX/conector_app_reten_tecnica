@@ -51,17 +51,19 @@ class SAPManipulation():
     @staticmethod
     def start_SAP(f):
         def wrap(self, *args, **kwargs):
+            _self:SAPManipulation = self
+            
             try:
-                self.session
+                _self.session
             except AttributeError:
-                self.__conectar_sap()
+                _self.__conectar_sap()
             try:
-                result =  f(self, *args, **kwargs)
+                result =  f(_self, *args, **kwargs)
             finally:
                 sleep(5)
                 try:
                     if kwargs['fechar_sap_no_final']:
-                        self.fechar_sap()
+                        _self.fechar_sap()
                 except:
                     pass
             return result
@@ -72,11 +74,13 @@ class SAPManipulation():
     def __verificar_conections(f):
         @wraps(f)
         def wrap(self, *args, **kwargs):
-            result = f(self, *args, **kwargs)
+            _self:SAPManipulation = self
+            
+            result = f(_self, *args, **kwargs)
             try:
-                if "Continuar com este logon sem encerrar os logons existentes".lower() in (choice:=self.session.findById("wnd[1]/usr/radMULTI_LOGON_OPT2")).text.lower():
+                if "Continuar com este logon sem encerrar os logons existentes".lower() in (choice:=_self.session.findById("wnd[1]/usr/radMULTI_LOGON_OPT2")).text.lower():
                     choice.select()
-                    self.session.findById("wnd[0]").sendVKey(0)
+                    _self.session.findById("wnd[0]").sendVKey(0)
             except:
                 pass
             return result
