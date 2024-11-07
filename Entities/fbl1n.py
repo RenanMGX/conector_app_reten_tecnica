@@ -3,23 +3,29 @@ from .dependencies.config import Config
 from .dependencies.credenciais import Credential
 from time import sleep
 from copy import deepcopy
-from pandas import DataFrame
+import pandas as pd
 from .cod_extrator import CodExtrator
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from Entities.dependencies.functions import P
+from .cod_extrator import Codigo
+from typing import List
+from getpass import getuser
+import os
+from .dependencies.functions import Functions
+import numpy as nb
 
 class FBL1N(SAPManipulation):
     def __init__(self) -> None:
-        crd:dict = Credential(Config()['credential']['crd']).load()
+        crd:dict = Credential(Config()['credential']['sap']).load()
         super().__init__(user=crd['user'], password=crd['password'], ambiente=crd['ambiente'])
         
     @SAPManipulation.start_SAP
-    def start(self, codes:CodExtrator):
+    def consultar_pagamentos(self, codes:CodExtrator, *, delete_plan_excel:bool=True) -> List[Codigo]:
         if (not codes.codes) or (not codes.list_codes):
             print(P("Sem arquivos para pesquisar", color='yellow'))
             self.fechar_sap()
-            return
+            return []
         
         self.session.findById("wnd[0]/tbar[0]/okcd").text = "/n fbl1n"
         self.session.findById("wnd[0]").sendVKey(0)
@@ -32,7 +38,7 @@ class FBL1N(SAPManipulation):
         
         self.session.findById("wnd[0]/tbar[1]/btn[16]").press()
         self.session.findById("wnd[0]/usr/ssub%_SUBSCREEN_%_SUB%_CONTAINER:SAPLSSEL:2001/ssubSUBSCREEN_CONTAINER2:SAPLSSEL:2000/ssubSUBSCREEN_CONTAINER:SAPLSSEL:1106/btn%_%%DYN011_%_APP_%-VALU_PUSH").press()
-        DataFrame(codes.list_codes).to_clipboard(header=False, index=False)        
+        pd.DataFrame(codes.list_codes).to_clipboard(header=False, index=False)        
         self.session.findById("wnd[1]/tbar[0]/btn[24]").press()
         self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
         #self.session.findById("wnd[0]/usr/ssub%_SUBSCREEN_%_SUB%_CONTAINER:SAPLSSEL:2001/ssubSUBSCREEN_CONTAINER2:SAPLSSEL:2000/ssubSUBSCREEN_CONTAINER:SAPLSSEL:1106/btn%_%%DYN011_%_APP_%-VALU_PUSH").press()
@@ -42,26 +48,40 @@ class FBL1N(SAPManipulation):
         
         self.session.findById("wnd[0]/tbar[1]/btn[8]").press()
         
-        _codes = deepcopy(codes.codes) 
+        self.session.findById("wnd[0]").sendVKey(16)
+        self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
         
-        count = 4
-        while True:
+        temp_file:str = os.path.join(f"C:\\Users\\{getuser()}\\Downloads", datetime.now().strftime('reten_tecnica-%d%m%Y%H%M%S.xlsx'))
+        self.session.findById("wnd[1]/usr/ctxtDY_PATH").text = os.path.dirname(temp_file)
+        self.session.findById("wnd[1]/usr/ctxtDY_FILENAME").text = os.path.basename(temp_file)
+        
+        self.session.findById("wnd[1]/tbar[0]/btn[0]").press()  
+
+        sleep(3)
+        Functions.fechar_excel(temp_file)
+        self.fechar_sap()
+
+        _codes:List[Codigo] = deepcopy(codes.codes)
+        
+        df = pd.read_excel(temp_file, dtype=str)
+        for row,value in df.iterrows():
             try:
-                n_doc:str = self.session.findById(f"wnd[0]/usr/lbl[63,{count}]").text # numero Documento
-                div:str = self.session.findById(f"wnd[0]/usr/lbl[14,{count}]").text # Divisão
-                atrib:str = self.session.findById(f"wnd[0]/usr/lbl[101,{count}]").text # Atribuição
                 for code in _codes:
-                    if (code['div'].lower() == div.lower()) and (code['n_doc'] == n_doc):
-                        if atrib:
-                            code['atrib'] = atrib
+                    if (value['Divisão'].lower() == code.divisao.lower()) and (value['Nº documento'] == code.number):
+                        if not value['Atribuição'] is nb.nan:
+                            code.registrar_pagamento(atribuicao=value['Atribuição'], nome_pagador=value['Nome do usuário'])
+                            break
             except:
-                #import traceback
-                #print(traceback.format_exc())
-                break
-            count+=1
+                pass
+        
+        try:
+            if delete_plan_excel:
+                os.unlink(temp_file)
+        except:
+            pass
         
         return _codes
         
 if __name__ == "__main__":
     pass
-    DataFrame().to_clipboard
+    pd.DataFrame().to_clipboard

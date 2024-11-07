@@ -1,5 +1,7 @@
 import sys
 from typing import Dict, List
+from .logs import Logs
+import traceback
 
 class Arguments:
     def __init__(self, valid_arguments:Dict[str, object]) -> None:
@@ -20,8 +22,11 @@ class Arguments:
                         self.__valid_arguments[selected_argv](self.__argv[2:]) #type: ignore
                     else:
                         self.__valid_arguments[selected_argv]() #type: ignore
-                except Exception as error:
-                    print(type(error), str(error))
+                        
+                    Logs().register(status='Concluido', description="Automação Finalizada com Sucesso!", exception=traceback.format_exc())
+                except Exception as err:
+                    print(type(err), str(err))
+                    Logs().register(status='Error', description=str(err), exception=traceback.format_exc())
             else:
                 print("argumento não existe!")
                 self.__listar_argvs()

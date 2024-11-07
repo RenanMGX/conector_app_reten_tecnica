@@ -4,9 +4,66 @@ from Entities.dependencies.functions import P
 from typing import List, Dict
 from copy import deepcopy
 
+class Codigo:
+    @property
+    def file_path(self) -> str:
+        return self.__file_path
+    
+    @property
+    def file_name(self) -> str:
+        return os.path.basename(self.file_path)
+    
+    @property
+    def number(self) -> str:
+        if (x:=re.search(r'[0-9]{10}', self.file_name)):
+            return x.group()
+        return ""
+    
+    @property
+    def divisao(self) -> str:
+        if (x:=re.search(r'[A-z]{1}[0-9]{3}', self.file_name)):
+            return x.group()
+        return ""
+    
+    @property
+    def id(self) -> str:
+        if (x:=re.search(r'[0-9]+(?=-Rete)', self.file_name)):
+            return x.group()
+        return ""
+    
+    @property
+    def attribuicao(self) -> str:
+        return self.__attribuicao
+    
+    @property
+    def nome_pagador(self) -> str:
+        return self.__nome_pagador
+    
+    def __init__(self, file_path:str) -> None:
+        self.__file_path:str = file_path
+        self.__attribuicao:str = ""
+        self.__nome_pagador:str = ""
+        
+    def __repr__(self) -> str:
+        return f"{self.id}/{self.divisao}/{self.number}"
+        
+    def isValid(self) -> bool:
+        if (self.id) and (self.divisao) and (self.number):
+            return True
+        return False
+    
+    def registrar_pagamento(self, *, atribuicao:str, nome_pagador:str) -> None:
+        self.__attribuicao = atribuicao
+        self.__nome_pagador = nome_pagador
+        
+    def esta_pago(self) -> bool:
+        if (self.attribuicao) and (self.__nome_pagador):
+            return True
+        return False
+
 class CodExtrator:
     @property
-    def codes(self) -> List[Dict[str,str]]:
+    def codes(self) -> List[Codigo]:
         return self.__codes
     
     @property
@@ -15,7 +72,7 @@ class CodExtrator:
             codes = []
             if self.__codes:
                 for code in self.__codes:
-                    codes.append(code['n_doc'])
+                    codes.append(code.number)
             return codes
         except:
             return []
@@ -24,38 +81,23 @@ class CodExtrator:
         self.__codes = []
     
     @staticmethod
-    def file(file_path:str) -> dict:
+    def file(file_path:str) -> Codigo|None:
         if (os.path.exists(file_path)) and (os.path.isfile(file_path)):
-            file_path = os.path.basename(file_path)
-            if (cod:=re.search(r'[0-9]{10}', file_path)):
-                print(P(f"o codigo {cod.group()} foi extraido com sucesso do arquivo '{os.path.basename(file_path)}'", color='green'))
-                
-                centro:str
-                if (x:=re.search(r'[A-z]{1}[0-9]{3}', file_path)):
-                    centro = x.group()
-                else:
-                    return {}
-                
-                id:str
-                if (x:=re.search(r'[0-9]+(?=-Rete)', file_path)):
-                    id = x.group()
-                else:
-                    return {}
-                
-                return {"id": id, "div": centro, "n_doc": cod.group()}
-            print(P(f"não foi encontrador nenhum codigo do arquivo {os.path.basename(file_path)}", color='red'))
-        else:
-            print(P(f"o arquivo '{file_path}' não é valido!", color='red'))
-        return {}
+            cod = Codigo(file_path)
+            if cod.isValid():
+                print(P(f"o codigo {cod.number} foi extraido com sucesso do arquivo '{cod.file_name}'", color='green'))
+                return cod
+            print(P(f"não foi encontrador nenhum codigo do arquivo {cod.file_name}", color='red'))
         
     def folder(self, folder_path:str):
-        result:list = []
+        result:List[Codigo] = []
         if (os.path.exists(folder_path)) and (os.path.isdir(folder_path)):
             for file in os.listdir(folder_path):
                 file = os.path.join(folder_path, file)
                 temp = CodExtrator.file(file)
                 if temp:
                     result.append(temp)
+        
         self.__codes = result
         return self
 
