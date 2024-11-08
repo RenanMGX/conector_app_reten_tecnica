@@ -33,7 +33,7 @@ class FBL1N(SAPManipulation):
         self.session.findById("wnd[0]/usr/ctxtKD_BUKRS-LOW").text = "*"
         
         self.session.findById("wnd[0]/usr/radX_AISEL").select()
-        self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-LOW").text = (datetime.now() - relativedelta(months=6)).strftime('%d.%m.%Y')
+        self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-LOW").text = (datetime.now() - relativedelta(months=3)).strftime('%d.%m.%Y')
         self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-HIGH").text = datetime.now().strftime('%d.%m.%Y')        
         
         self.session.findById("wnd[0]/tbar[1]/btn[16]").press()
@@ -44,7 +44,7 @@ class FBL1N(SAPManipulation):
         #self.session.findById("wnd[0]/usr/ssub%_SUBSCREEN_%_SUB%_CONTAINER:SAPLSSEL:2001/ssubSUBSCREEN_CONTAINER2:SAPLSSEL:2000/ssubSUBSCREEN_CONTAINER:SAPLSSEL:1106/btn%_%%DYN011_%_APP_%-VALU_PUSH").press()
         self.session.findById("wnd[0]/usr/ssub%_SUBSCREEN_%_SUB%_CONTAINER:SAPLSSEL:2001/ssubSUBSCREEN_CONTAINER2:SAPLSSEL:2000/ssubSUBSCREEN_CONTAINER:SAPLSSEL:1106/ctxt%%DYN015-LOW").text = "KC"
         
-        self.session.findById("wnd[0]/usr/ctxtPA_VARI").text = "/PATRIMAR"
+        self.session.findById("wnd[0]/usr/ctxtPA_VARI").text = "RENTENRPA"
         
         self.session.findById("wnd[0]/tbar[1]/btn[8]").press()
         
@@ -56,7 +56,7 @@ class FBL1N(SAPManipulation):
         self.session.findById("wnd[1]/usr/ctxtDY_FILENAME").text = os.path.basename(temp_file)
         
         self.session.findById("wnd[1]/tbar[0]/btn[0]").press()  
-
+        
         sleep(3)
         Functions.fechar_excel(temp_file)
         self.fechar_sap()
@@ -68,7 +68,7 @@ class FBL1N(SAPManipulation):
             try:
                 for code in _codes:
                     if (value['Divisão'].lower() == code.divisao.lower()) and (value['Nº documento'] == code.number):
-                        if not value['Atribuição'] is nb.nan:
+                        if (not value['Doc.compensação'] is nb.nan) and (not value['Data de compensação'] is nb.nan):
                             code.registrar_pagamento(atribuicao=value['Atribuição'], nome_pagador=value['Nome do usuário'])
                             break
             except:
@@ -84,4 +84,4 @@ class FBL1N(SAPManipulation):
         
 if __name__ == "__main__":
     pass
-    pd.DataFrame().to_clipboard
+    

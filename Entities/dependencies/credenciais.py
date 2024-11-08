@@ -52,8 +52,6 @@ class Credential:
         else:
             print(f"{name_file=} ja existe!")
         
-        
-        
     def load(self) -> dict:
         """crie / ler um arquivo json contendo as credenciais
 
@@ -79,7 +77,6 @@ class Credential:
             new_result[key] = self.decifrar(value, new_result['key'])
             
         return new_result
-                            
     
     def save(self, **kargs) -> None:
         token = randint(500,6000)
@@ -128,6 +125,4 @@ class Credential:
         
 if __name__ == "__main__":
     crd = Credential('Microsoft-RPA')
-    
-    
     print(crd.load())

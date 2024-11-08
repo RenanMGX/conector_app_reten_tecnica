@@ -5,7 +5,6 @@ from typing import Literal
 from Entities.dependencies.functions import Functions
 from Entities.dependencies.config import Config
 from Entities.dependencies.credenciais import Credential
-
 from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.client_context import ClientContext
 
@@ -26,16 +25,7 @@ class SharePoint:
             os.makedirs(download_path)
         return download_path
     
-    def __init__(self) -> None:
-        
-        # self.__sharePoint:APISharePoint = APISharePoint(
-        #     url="https://patrimar.sharepoint.com/sites/controle",
-        #     lista="RetencaoTecnica",
-        #     email=crd_sharepoint.get('email'),
-        #     password=crd_sharepoint.get('password')
-        # )
-        
-        
+    def __init__(self) -> None:        
         crd:dict = Credential(Config()['credential']['sharepoint']).load()
         url = Config()['credential']['url']
         lista = Config()['credential']['lista']
@@ -49,7 +39,6 @@ class SharePoint:
         self.__lista = self.__ctx.web.lists.get_by_title(lista)
         
         self.consultar()
-
         
     def consultar(self, with_attachment:bool=False):
         items = self.__lista.get_items()
@@ -79,7 +68,6 @@ class SharePoint:
                     item.properties['Attachment_Path'] = path_attachment_download
                                 
                 list_valid.append(item.properties)
-                        
                     
         self.__df = pd.DataFrame(list_valid)
             
@@ -116,12 +104,13 @@ class SharePoint:
         self.__df = pd.DataFrame(list_valid)    
         
         return self
-        
             
     def alterar(self, id, *, valor:str, coluna:str) -> None:
         item_to_update = self.__lista.get_item_by_id(id)
+        
         # Atualizando os campos do item
         item_to_update.set_property(coluna, valor)
+        
         #item_to_update.set_property("OutroCampo", "Novo Valor")
         item_to_update.update()
             
@@ -141,8 +130,6 @@ class SharePoint:
                     print(error)
                     Functions.fechar_excel(file)
                     os.unlink(file)    
-            
-    
 
 if __name__ == "__main__":
     pass

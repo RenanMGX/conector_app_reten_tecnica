@@ -1,16 +1,17 @@
+from Entities.dependencies.arguments import Arguments
 from Entities.fbl1n import FBL1N
 from Entities.cod_extrator import CodExtrator
 from Entities.sharepoint import SharePoint
-from Entities.dependencies.arguments import Arguments
 from Entities.dependencies.logs import Logs
 import os
 import shutil
-from Entities.dependencies.functions import P
+from Entities.dependencies.functions import P        
+from Entities.dependencies.config import Config
 
 class Execute:
     @staticmethod
     def start():
-        target_folder_path:str = r"R:\Conector APP reten tecnica - consulta SAP fin\#material\Arquivos"
+        target_folder_path:str = Config()['paths']['target_folder']
         if not os.path.exists(target_folder_path):
             raise Exception(f"O caminho '{target_folder_path}' é invalido!")
         
@@ -30,14 +31,14 @@ class Execute:
             return
         print(P("Consulta Finalizada"))
         
-        path_folder_pagos:str = os.path.join(target_folder_path, 'Pagos')
+        path_folder_pagos:str = os.path.join(target_folder_path, 'Compensado')
         if not os.path.exists(path_folder_pagos):
             os.makedirs(path_folder_pagos)
         
         print(P("Iniciando api do Sharepoint"))
         sharepoint = SharePoint()
         for file in files:
-            print(P(f"O arquivo {file.file_name} esta pago!"))
+            print(P(f"O arquivo {file.file_name} esta compensado!",color="green"))
             sharepoint.alterar(file.id, coluna='AprovacaoFinanceiro', valor='Aprovado')
             sharepoint.alterar(file.id, coluna='ResponsavelFinanceiro', valor=file.nome_pagador)
             try:
@@ -45,9 +46,7 @@ class Execute:
             except:
                 Logs().register(status='Report', description=f"Não foi possivel mover o arquivo para a pasta {file.file_path} para a pasta pagos")
         
-        print(P("Finalizado", color='red'))
-        
-        
+        print(P("Finalizado!", color='yellow'))
 
 if __name__ == "__main__":
     Arguments({

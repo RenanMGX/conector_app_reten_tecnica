@@ -10,7 +10,6 @@ class Arguments:
         
         self.__start()
     
-    
     def __start(self):
         if len(self.__argv) > 1:
             selected_argv = self.__argv[1]
@@ -37,6 +36,7 @@ class Arguments:
         print("são permitido apenas os seguintes argumentos: ")
         for key, value in self.__valid_arguments.items():
             print(key)
+        print()
 
 def teste(args):
     print(args)
@@ -45,3 +45,4 @@ if __name__ == "__main__":
     Arguments(valid_arguments={
         "teste": teste
     })
+    

@@ -13,7 +13,6 @@ from socket import gethostname
 from .project_name import PROJECT_NAME
 from .config import Config
 
-
 class Logs:
     @property
     def path_folder(self) -> str:
@@ -54,7 +53,6 @@ class Logs:
 
             response = requests.request("PATCH", reqUrl, data=payload,  headers=headersList)
 
-            #print(response.text)
         except Exception as error:
             print(error)
                     

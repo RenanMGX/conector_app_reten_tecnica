@@ -94,9 +94,7 @@ class P:
         
     def __str__(self) -> str:
         return f"{self.date}{(f"{self.__title} - " if self.__title else "- ")}{self.color + self.__value + Fore.RESET}"
-
  
 if __name__ == "__main__":
-    
     pass
     

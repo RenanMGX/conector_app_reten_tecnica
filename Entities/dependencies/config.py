@@ -8,7 +8,6 @@ try:
 except ImportError:
     default_config: Dict[str,Dict[str,object]] = {}
 
-
 class Config:
     @property
     def file_name(self) -> str:
