@@ -38,6 +38,7 @@ class FBL1N(SAPManipulation):
         
         self.session.findById("wnd[0]/tbar[1]/btn[16]").press()
         self.session.findById("wnd[0]/usr/ssub%_SUBSCREEN_%_SUB%_CONTAINER:SAPLSSEL:2001/ssubSUBSCREEN_CONTAINER2:SAPLSSEL:2000/ssubSUBSCREEN_CONTAINER:SAPLSSEL:1106/btn%_%%DYN011_%_APP_%-VALU_PUSH").press()
+        
         pd.DataFrame(codes.list_codes).to_clipboard(header=False, index=False)        
         self.session.findById("wnd[1]/tbar[0]/btn[24]").press()
         self.session.findById("wnd[1]/tbar[0]/btn[8]").press()
@@ -68,10 +69,14 @@ class FBL1N(SAPManipulation):
             try:
                 for code in _codes:
                     if (value['Divisão'].lower() == code.divisao.lower()) and (value['Nº documento'] == code.number):
+                        code.registrar_nome(value['Nome do usuário'])
+                        code.registrar_data_lancamento(value['Data de lançamento'])
                         if (not value['Doc.compensação'] is nb.nan) and (not value['Data de compensação'] is nb.nan):
                             code.registrar_pagamento(atribuicao=value['Atribuição'], nome_pagador=value['Nome do usuário'])
                             break
             except:
+                import traceback
+                print(traceback.format_exc())
                 pass
         
         try:

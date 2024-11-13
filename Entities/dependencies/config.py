@@ -19,7 +19,7 @@ class Config:
     
     def __init__(self):
         if not os.path.exists(self.file_name):
-            with open(self.file_name, 'w')as _file:
+            with open(self.file_name, 'w', encoding='utf-8')as _file:
                 _file.write("")
             self.__config = configparser.ConfigParser()
             self.read()
@@ -43,10 +43,10 @@ class Config:
             return {}
         
     def read(self):
-        self.__config.read(self.file_name)
+        self.__config.read(self.file_name, encoding='utf-8')
         
     def __save(self) -> None:
-        with open(self.file_name, 'w')as _file:
+        with open(self.file_name, 'w', encoding='utf-8')as _file:
             self.config.write(_file)
         self.read()
         

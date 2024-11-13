@@ -8,7 +8,7 @@ default:Dict[str, Dict[str,object]] = {
         'lista': 'RetencaoTecnica'
     },
     'paths': {
-      'target_folder': r"R:\Conector APP reten tecnica - consulta SAP fin\#material\Arquivos"
+      'target_folder': r"\\server008\G\ARQ_PATRIMAR\WORK\Notas Fiscais Digitalizadas\RETENÇÃO TÉCNICA"
     },
     
     'log': {

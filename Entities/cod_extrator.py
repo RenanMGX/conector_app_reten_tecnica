@@ -3,6 +3,7 @@ import re
 from Entities.dependencies.functions import P
 from typing import List, Dict
 from copy import deepcopy
+from datetime import datetime
 
 class Codigo:
     @property
@@ -39,10 +40,18 @@ class Codigo:
     def nome_pagador(self) -> str:
         return self.__nome_pagador
     
+    @property
+    def data_lancamento(self) -> str:
+        if self.__data_lancamento:
+            data = datetime.strptime(self.__data_lancamento, "%Y-%m-%d %H:%M:%S")
+            return data.strftime("%d/%m/%Y")
+        return self.__data_lancamento
+    
     def __init__(self, file_path:str) -> None:
         self.__file_path:str = file_path
         self.__attribuicao:str = ""
         self.__nome_pagador:str = ""
+        self.__data_lancamento:str = ""
         
     def __repr__(self) -> str:
         return f"{self.id}/{self.divisao}/{self.number}"
@@ -54,7 +63,13 @@ class Codigo:
     
     def registrar_pagamento(self, *, atribuicao:str, nome_pagador:str) -> None:
         self.__attribuicao = atribuicao
-        self.__nome_pagador = nome_pagador
+        self.registrar_nome(nome_pagador)
+        
+    def registrar_data_lancamento(self, data) -> None:
+        self.__data_lancamento = data    
+        
+    def registrar_nome(self, nome) -> None:
+        self.__nome_pagador = nome
         
     def esta_pago(self) -> bool:
         if (self.attribuicao) and (self.__nome_pagador):
