@@ -34,7 +34,13 @@ class Codigo:
     
     @property
     def attribuicao(self) -> str:
-        return self.__attribuicao
+        try:
+            if self.__attribuicao:
+                date = datetime.strptime(self.__attribuicao, '%d.%m').replace(year=datetime.now().year)
+                return date.strftime('%Y/%m/%d')
+        except:
+            pass
+        return ""
     
     @property
     def nome_pagador(self) -> str:
@@ -42,10 +48,14 @@ class Codigo:
     
     @property
     def data_lancamento(self) -> str:
-        if self.__data_lancamento:
-            data = datetime.strptime(self.__data_lancamento, "%Y-%m-%d %H:%M:%S")
-            return data.strftime("%d/%m/%Y")
-        return self.__data_lancamento
+        try:
+            if self.__data_lancamento:
+                data = datetime.strptime(self.__data_lancamento, "%Y-%m-%d %H:%M:%S")
+                return data.strftime("%Y/%m/%d")
+            #return self.__data_lancamento
+        except:
+            pass
+        return ""
     
     def __init__(self, file_path:str) -> None:
         self.__file_path:str = file_path
@@ -72,7 +82,7 @@ class Codigo:
         self.__nome_pagador = nome
         
     def esta_pago(self) -> bool:
-        if (self.attribuicao) and (self.__nome_pagador):
+        if (self.attribuicao) and (self.nome_pagador):
             return True
         return False
 

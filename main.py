@@ -42,13 +42,18 @@ class Execute:
             #import pdb;pdb.set_trace()
             sharepoint.alterar(file.id, coluna='AprovacaoCentral', valor='Aprovado')
             sharepoint.alterar(file.id, coluna='ResponsavelCentral', valor=file.nome_pagador)
-            sharepoint.alterar(file.id, coluna='ComentarioCentral', valor=f"Data do Lançamento: {file.data_lancamento}")
+            if file.data_lancamento:
+                sharepoint.alterar(file.id, coluna='ConclusaoCentral', valor=file.data_lancamento)
 
             
             if file.esta_pago():
                 print(P(f"O arquivo {file.file_name} está compensado!",color="green"))
                 sharepoint.alterar(file.id, coluna='AprovacaoFinanceiro', valor='Aprovado')
-                #sharepoint.alterar(file.id, coluna='AprovacaoFinanceiro', valor='Aprovado')
+                #import pdb;pdb.set_trace()
+                if file.attribuicao:
+                    sharepoint.alterar(file.id, coluna='ConclusaoFinanceiro', valor=file.attribuicao)
+                
+                
                 try:
                     if Execute.delete_file:
                         os.unlink(file.file_path)
