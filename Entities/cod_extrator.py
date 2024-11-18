@@ -16,13 +16,13 @@ class Codigo:
     
     @property
     def number(self) -> str:
-        if (x:=re.search(r'[0-9]{10}', self.file_name)):
+        if (x:=re.search(r'(?<=[- ])[0-9]{10}', self.file_name)):
             return x.group()
         return ""
     
     @property
     def divisao(self) -> str:
-        if (x:=re.search(r'[A-z]{1}[0-9]{3}', self.file_name)):
+        if (x:=re.search(r'(?<=_)[A-z]{1}[0-9]{3}', self.file_name)):
             return x.group()
         return ""
     
