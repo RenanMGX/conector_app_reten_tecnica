@@ -62,6 +62,7 @@ class Codigo:
         self.__attribuicao:str = ""
         self.__nome_pagador:str = ""
         self.__data_lancamento:str = ""
+        self.processado:bool = False
         
     def __repr__(self) -> str:
         return f"{self.id}/{self.divisao}/{self.number}"

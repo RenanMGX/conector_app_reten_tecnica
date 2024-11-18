@@ -33,7 +33,7 @@ class FBL1N(SAPManipulation):
         self.session.findById("wnd[0]/usr/ctxtKD_BUKRS-LOW").text = "*"
         
         self.session.findById("wnd[0]/usr/radX_AISEL").select()
-        self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-LOW").text = (datetime.now() - relativedelta(months=3)).strftime('%d.%m.%Y')
+        self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-LOW").text = (datetime.now() - relativedelta(months=1)).strftime('%d.%m.%Y')
         self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-HIGH").text = datetime.now().strftime('%d.%m.%Y')        
         
         self.session.findById("wnd[0]/tbar[1]/btn[16]").press()
@@ -48,6 +48,9 @@ class FBL1N(SAPManipulation):
         self.session.findById("wnd[0]/usr/ctxtPA_VARI").text = "RENTENRPA"
         
         self.session.findById("wnd[0]/tbar[1]/btn[8]").press()
+        
+        if (error:=self.session.findById("wnd[0]/sbar").text) == "Memória escassa. Encerrar a transação antes de pausa !":
+            raise Exception(error)
         
         self.session.findById("wnd[0]").sendVKey(16)
         self.session.findById("wnd[1]/tbar[0]/btn[0]").press()
@@ -69,6 +72,7 @@ class FBL1N(SAPManipulation):
             try:
                 for code in _codes:
                     if (value['Divisão'].lower() == code.divisao.lower()) and (value['Nº documento'] == code.number):
+                        code.processado = True
                         code.registrar_nome(value['Nome do usuário'])
                         code.registrar_data_lancamento(value['Data de lançamento'])
                         if (not value['Doc.compensação'] is nb.nan) and (not value['Data de compensação'] is nb.nan):

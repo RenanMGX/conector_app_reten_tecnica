@@ -39,7 +39,8 @@ class Execute:
         sharepoint = SharePoint()
         #import pdb;pdb.set_trace()
         for file in files:
-            #import pdb;pdb.set_trace()
+            if not file.processado:
+                continue
             sharepoint.alterar(file.id, coluna='AprovacaoCentral', valor='Aprovado')
             sharepoint.alterar(file.id, coluna='ResponsavelCentral', valor=file.nome_pagador)
             if file.data_lancamento:
