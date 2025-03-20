@@ -18,7 +18,7 @@ import numpy as nb
 class FBL1N(SAPManipulation):
     def __init__(self) -> None:
         crd:dict = Credential(Config()['credential']['sap']).load()
-        super().__init__(user=crd['user'], password=crd['password'], ambiente=crd['ambiente'])
+        super().__init__(user=crd['user'], password=crd['password'], ambiente=crd['ambiente'], new_conection=True)
         
     @SAPManipulation.start_SAP
     def consultar_pagamentos(self, codes:CodExtrator, *, delete_plan_excel:bool=True) -> List[Codigo]:
