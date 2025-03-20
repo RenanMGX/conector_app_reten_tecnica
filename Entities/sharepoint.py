@@ -7,7 +7,8 @@ from Entities.dependencies.config import Config
 from Entities.dependencies.credenciais import Credential
 from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.client_context import ClientContext
-
+from office365.sharepoint.listitems.collection import ListItemCollection
+from office365.runtime.paths.resource_path import ResourcePath
 
 class SharePoint:
     @property
@@ -41,19 +42,66 @@ class SharePoint:
         self.consultar()
         
     def consultar(self, with_attachment:bool=False):
-        items = self.__lista.get_items()
+        items = self.__lista.get_items().expand(["AttachmentFiles"])
         self.__ctx.load(items)
         self.__ctx.execute_query()
         
         self.limpar_pasta_download() if with_attachment else None
         
         list_valid = []
-        for item in items:
-            if not item.properties.get('AprovacaoJuridico'):
-                if with_attachment:
+        while True:
+            for item in items:
+                if not item.properties.get('AprovacaoJuridico'):
+                    if with_attachment:
+                        path_attachment_download = []
+                        if item.properties['NumChamadoZendesk']:
+                            continue
+                        if item.properties['Attachments']:
+                            attachment_files = item.attachment_files
+                            self.__ctx.load(attachment_files)
+                            self.__ctx.execute_query()
+                            for attachment_file in attachment_files:
+                                file_name = os.path.join(self.download_path, f"{item.properties.get('ID')}-{attachment_file.properties['FileName']}")
+                                path_attachment_download.append(file_name)
+                                with open(file_name, 'wb')as _file_handle:
+                                    attachment_file.download(_file_handle)
+                                    self.__ctx.execute_query()
+                                
+                        item.properties['Attachment_Path'] = path_attachment_download
+                                    
+                    list_valid.append(item.properties)
+            
+            if not items._next_request_url:
+                break
+            
+            next_request_url = items._next_request_url
+            # Remove a parte da URL base, que pode ser algo como "https://patrimar.sharepoint.com/sites/controle/_api"
+            service_root = self.__ctx.service_root_url()
+            if next_request_url.startswith(service_root): #type: ignore
+                next_request_url = next_request_url[len(service_root):]            
+            
+            items = ListItemCollection(self.__ctx, ResourcePath(next_request_url))#type: ignore
+            self.__ctx.load(items)
+            self.__ctx.execute_query()                        
+                    
+        self.__df = pd.DataFrame(list_valid)
+            
+        return self
+    
+    def coletar_arquivos_controle(self):
+        items = self.__lista.get_items().expand(["AttachmentFiles"])
+        self.__ctx.load(items)
+        self.__ctx.execute_query()
+        
+        self.limpar_pasta_download()
+                
+        list_valid = []
+        while True:
+            for item in items:
+                if item.properties.get('RegistroArquivoControle'):
+                    continue            
+                if "Aprovado" in str(item.properties.get('AprovacaoControle')):
                     path_attachment_download = []
-                    if item.properties['NumChamadoZendesk']:
-                        continue
                     if item.properties['Attachments']:
                         attachment_files = item.attachment_files
                         self.__ctx.load(attachment_files)
@@ -64,42 +112,23 @@ class SharePoint:
                             with open(file_name, 'wb')as _file_handle:
                                 attachment_file.download(_file_handle)
                                 self.__ctx.execute_query()
-                            
-                    item.properties['Attachment_Path'] = path_attachment_download
-                                
-                list_valid.append(item.properties)
-                    
-        self.__df = pd.DataFrame(list_valid)
-            
-        return self
-    
-    def coletar_arquivos_controle(self):
-        items = self.__lista.get_items()
-        self.__ctx.load(items)
-        self.__ctx.execute_query()
-        
-        self.limpar_pasta_download()
-                
-        list_valid = []
-        for item in items:
-            if item.properties.get('RegistroArquivoControle'):
-                continue            
-            if "Aprovado" in str(item.properties.get('AprovacaoControle')):
-                path_attachment_download = []
-                if item.properties['Attachments']:
-                    attachment_files = item.attachment_files
-                    self.__ctx.load(attachment_files)
-                    self.__ctx.execute_query()
-                    for attachment_file in attachment_files:
-                        file_name = os.path.join(self.download_path, f"{item.properties.get('ID')}-{attachment_file.properties['FileName']}")
-                        path_attachment_download.append(file_name)
-                        with open(file_name, 'wb')as _file_handle:
-                            attachment_file.download(_file_handle)
-                            self.__ctx.execute_query()
-                                    
-                item.properties['Attachment_Path'] = path_attachment_download
                                         
-                list_valid.append(item.properties)
+                    item.properties['Attachment_Path'] = path_attachment_download
+                                            
+                    list_valid.append(item.properties)
+                    
+            if not items._next_request_url:
+                break
+            
+            next_request_url = items._next_request_url
+            # Remove a parte da URL base, que pode ser algo como "https://patrimar.sharepoint.com/sites/controle/_api"
+            service_root = self.__ctx.service_root_url()
+            if next_request_url.startswith(service_root): #type: ignore
+                next_request_url = next_request_url[len(service_root):]            
+            
+            items = ListItemCollection(self.__ctx, ResourcePath(next_request_url))#type: ignore
+            self.__ctx.load(items)
+            self.__ctx.execute_query()                        
                                 
         self.__df = pd.DataFrame(list_valid)    
         
