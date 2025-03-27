@@ -26,7 +26,7 @@ class Execute:
             return
         
         print(P("consultando pagamentos no SAP"))
-        files = FBL1N().consultar_pagamentos(files)
+        files = FBL1N().consultar_pagamentos(files, delete_plan_excel=True)
         #files = [x for x in files if x.esta_pago()]
         if not files:
             print(P("Nenhum Pago para Lançar no Aplicativo!"))
@@ -39,6 +39,7 @@ class Execute:
         sharepoint = SharePoint()
         #import pdb;pdb.set_trace()
         for file in files:
+            #import pdb;pdb.set_trace()
             if not file.processado:
                 continue
             sharepoint.alterar(file.id, coluna='AprovacaoCentral', valor='Aprovado')

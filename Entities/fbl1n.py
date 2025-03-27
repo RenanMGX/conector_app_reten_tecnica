@@ -33,7 +33,7 @@ class FBL1N(SAPManipulation):
         self.session.findById("wnd[0]/usr/ctxtKD_BUKRS-LOW").text = "*"
         
         self.session.findById("wnd[0]/usr/radX_AISEL").select()
-        self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-LOW").text = (datetime.now() - relativedelta(months=1)).strftime('%d.%m.%Y')
+        self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-LOW").text = (datetime.now() - relativedelta(months=6)).strftime('%d.%m.%Y')
         self.session.findById("wnd[0]/usr/ctxtSO_BUDAT-HIGH").text = datetime.now().strftime('%d.%m.%Y')        
         
         self.session.findById("wnd[0]/tbar[1]/btn[16]").press()
@@ -76,8 +76,9 @@ class FBL1N(SAPManipulation):
                         code.registrar_nome(value['Nome do usuário'])
                         code.registrar_data_lancamento(value['Data de lançamento'])
                         if (not value['Doc.compensação'] is nb.nan) and (not value['Data de compensação'] is nb.nan):
-                            code.registrar_pagamento(atribuicao=value['Atribuição'], nome_pagador=value['Nome do usuário'])
-                            break
+                            if datetime.now() > datetime.strptime(value['Data de compensação'], "%Y-%m-%d %H:%M:%S").replace(hour=23, minute=59, second=59):
+                                code.registrar_pagamento(atribuicao=value['Data de compensação'], nome_pagador=value['Nome do usuário'])
+                                break
             except:
                 import traceback
                 print(traceback.format_exc())
