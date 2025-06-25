@@ -36,7 +36,7 @@ class Codigo:
     def attribuicao(self) -> str:
         try:
             if self.__attribuicao:
-                date = datetime.strptime(self.__attribuicao, '%d.%m').replace(year=datetime.now().year)
+                date = datetime.strptime(self.__attribuicao, "%Y-%m-%d %H:%M:%S").replace(year=datetime.now().year)
                 return date.strftime('%Y/%m/%d')
         except:
             pass

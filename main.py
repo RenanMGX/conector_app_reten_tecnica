@@ -74,6 +74,7 @@ class ExecuteAPP:
             )
         #import pdb;pdb.set_trace()
         for file in files:
+            #import pdb;pdb.set_trace()
             if not file.processado:
                 continue
             sharepoint.alterar(file.id, coluna='AprovacaoCentral', valor='Aprovado')
