@@ -1,1 +1,0 @@
-PROJECT_NAME:str = "Conector APP Retenção Tecnica"

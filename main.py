@@ -1,20 +1,29 @@
-from Entities.dependencies.arguments import Arguments
 from Entities.fbl1n import FBL1N
 from Entities.cod_extrator import CodExtrator
 from Entities.sharepoint import SharePoint
-from Entities.dependencies.logs import Logs
 import os
 import shutil
-from Entities.dependencies.functions import P        
-from Entities.dependencies.config import Config
+from patrimar_dependencies.functions import P
+from patrimar_dependencies.sharepointfolder import SharePointFolders
+from botcity.maestro import * # type: ignore
 
-class Execute:
+class ExecuteAPP:
     delete_file:bool=True
     
     @staticmethod
-    def start():
+    def start(*, 
+            maestro:BotMaestroSDK|None = None,
+            target_folder_path:str,
+            sap_user:str, 
+            sap_password:str, 
+            sap_ambiente:str,
+            sharepoint_email:str,
+            sharepoint_password:str,
+            sharepoint_url:str,
+            sharepoint_lista:str,
+        ):
         
-        target_folder_path:str = Config()['paths']['target_folder']
+        #target_folder_path:str = target_folder_path
         if not os.path.exists(target_folder_path):
             raise Exception(f"O caminho '{target_folder_path}' é invalido!")
         
@@ -22,21 +31,47 @@ class Execute:
         files = CodExtrator().folder(target_folder_path)
         if not files.codes:
             print(P("Nenhum arquivo encontrado para consultar!"))
-            Logs().register(status='Report', description="Nenhum arquivo encontrado para consultar!")
+            
+            if not maestro is None:
+                maestro.new_log_entry(
+                    activity_label="SAP-Conector_APP_Retencao_Tecnica",
+                    values={
+                        "Texto": "Nenhum arquivo encontrado para consultar!"
+                    }
+                )                            
+
             return
         
         print(P("consultando pagamentos no SAP"))
-        files = FBL1N().consultar_pagamentos(files)
+        files = FBL1N(
+                sap_user=sap_user,
+                sap_password=sap_password,
+                sap_ambiente=sap_ambiente
+            ).consultar_pagamentos(files)
+        
         #files = [x for x in files if x.esta_pago()]
         if not files:
             print(P("Nenhum Pago para Lançar no Aplicativo!"))
-            Logs().register(status='Report', description="Nenhum Pago para Lançar no Aplicativo!")
+            
+            if not maestro is None:
+                maestro.new_log_entry(
+                    activity_label="SAP-Conector_APP_Retencao_Tecnica",
+                    values={
+                        "Texto": "Nenhum Pago para Lançar no Aplicativo!"
+                    }
+                )                            
+            
             return
         print(P("Consulta Finalizada"))
         
         
         print(P("Iniciando api do Sharepoint"))
-        sharepoint = SharePoint()
+        sharepoint = SharePoint(
+                sharepoint_email=sharepoint_email,
+                sharepoint_password=sharepoint_password,
+                sharepoint_url=sharepoint_url,
+                sharepoint_lista=sharepoint_lista
+            )
         #import pdb;pdb.set_trace()
         for file in files:
             if not file.processado:
@@ -56,7 +91,7 @@ class Execute:
                 
                 
                 try:
-                    if Execute.delete_file:
+                    if ExecuteAPP.delete_file:
                         os.unlink(file.file_path)
                     else:
                         path_folder_pagos:str = os.path.join(target_folder_path, 'Compensado')
@@ -64,16 +99,41 @@ class Execute:
                             os.makedirs(path_folder_pagos)
                         shutil.move(file.file_path, path_folder_pagos)
                 except:
-                    Logs().register(status='Report', description=f"Não foi possivel mover o arquivo para a pasta {file.file_path} para a pasta pagos")
+                    if not maestro is None:
+                        maestro.new_log_entry(
+                            activity_label="SAP-Conector_APP_Retencao_Tecnica",
+                            values={
+                                "Texto": f"Não foi possivel mover o arquivo para a pasta {file.file_path} para a pasta pagos"
+                            }
+                        )                            
         
         print(P("Finalizado!", color='yellow'))
         
-    @staticmethod
-    def start_delete_file_off() -> None:
-        Execute.delete_file = False
-        Execute.start()
+    # @staticmethod
+    # def start_delete_file_off() -> None:
+    #     Execute.delete_file = False
+    #     Execute.start()
 if __name__ == "__main__":
-    Arguments({
-        'start': Execute.start,
-        'start_delete_file_off': Execute.start_delete_file_off
-    })
+    from patrimar_dependencies.credenciais import Credential
+    
+    crd_sharepoint:dict = Credential(
+        path_raiz=SharePointFolders(r'RPA - Dados\CRD\.patrimar_rpa\credenciais').value,
+        name_file="Microsoft-RPA"
+    ).load()
+    
+    crd_sap:dict = Credential(
+        path_raiz=SharePointFolders(r'RPA - Dados\CRD\.patrimar_rpa\credenciais').value,
+        name_file="SAP_PRD"
+    ).load()
+    
+    ExecuteAPP.start(
+        target_folder_path=r'\\server008\G\ARQ_PATRIMAR\WORK\Notas Fiscais Digitalizadas\RETENÇÃO TÉCNICA',
+        sharepoint_email=crd_sharepoint['email'],
+        sharepoint_password=crd_sharepoint['password'],
+        sharepoint_url="https://patrimar.sharepoint.com/sites/controle",
+        sharepoint_lista="RetencaoTecnica",
+        sap_user=crd_sap['user'],
+        sap_password=crd_sap['password'],
+        sap_ambiente=crd_sap['ambiente']
+    )
+    

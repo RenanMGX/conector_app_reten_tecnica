@@ -1,6 +1,6 @@
 import os
 import re
-from Entities.dependencies.functions import P
+from patrimar_dependencies.functions import P
 from typing import List, Dict
 from copy import deepcopy
 from datetime import datetime

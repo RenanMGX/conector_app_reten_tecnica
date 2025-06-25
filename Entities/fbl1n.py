@@ -1,24 +1,20 @@
-from .dependencies.sap import SAPManipulation
-from .dependencies.config import Config
-from .dependencies.credenciais import Credential
+from patrimar_dependencies.sap import SAPManipulation
 from time import sleep
 from copy import deepcopy
 import pandas as pd
 from .cod_extrator import CodExtrator
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from Entities.dependencies.functions import P
+from patrimar_dependencies.functions import P, Functions
 from .cod_extrator import Codigo
 from typing import List
 from getpass import getuser
 import os
-from .dependencies.functions import Functions
 import numpy as nb
 
 class FBL1N(SAPManipulation):
-    def __init__(self) -> None:
-        crd:dict = Credential(Config()['credential']['sap']).load()
-        super().__init__(user=crd['user'], password=crd['password'], ambiente=crd['ambiente'], new_conection=True)
+    def __init__(self, *, sap_user:str, sap_password:str, sap_ambiente:str) -> None:
+        super().__init__(user=sap_user, password=sap_password, ambiente=sap_ambiente, new_conection=True)
         
     @SAPManipulation.start_SAP
     def consultar_pagamentos(self, codes:CodExtrator, *, delete_plan_excel:bool=True) -> List[Codigo]:

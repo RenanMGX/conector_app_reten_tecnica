@@ -2,9 +2,7 @@ import pandas as pd
 import os
 
 from typing import Literal
-from Entities.dependencies.functions import Functions
-from Entities.dependencies.config import Config
-from Entities.dependencies.credenciais import Credential
+from patrimar_dependencies.functions import Functions
 from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.listitems.collection import ListItemCollection
@@ -26,13 +24,12 @@ class SharePoint:
             os.makedirs(download_path)
         return download_path
     
-    def __init__(self) -> None:        
-        crd:dict = Credential(Config()['credential']['sharepoint']).load()
-        url = Config()['credential']['url']
-        lista = Config()['credential']['lista']
+    def __init__(self, *, sharepoint_email:str, sharepoint_password:str, sharepoint_url:str, sharepoint_lista:str) -> None:        
+        url = sharepoint_url
+        lista = sharepoint_lista
         
         self.__ctx_auth = AuthenticationContext(url)
-        if self.__ctx_auth.acquire_token_for_user(crd['email'], crd['password']):
+        if self.__ctx_auth.acquire_token_for_user(sharepoint_email, sharepoint_password):
             self.__ctx = ClientContext(url, self.__ctx_auth)
         else:
             raise PermissionError("não foi possivel acessar a lista")
