@@ -57,7 +57,11 @@ class FBL1N(SAPManipulation):
         
         self.session.findById("wnd[1]/tbar[0]/btn[0]").press()  
         
-        sleep(3)
+        sleep(5)
+        Functions.fechar_excel(temp_file)
+        sleep(5)
+        Functions.fechar_excel(temp_file)
+        sleep(5)
         Functions.fechar_excel(temp_file)
         self.fechar_sap()
 

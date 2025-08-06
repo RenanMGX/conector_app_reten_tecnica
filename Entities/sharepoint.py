@@ -7,6 +7,7 @@ from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.listitems.collection import ListItemCollection
 from office365.runtime.paths.resource_path import ResourcePath
+from time import sleep
 
 class SharePoint:
     @property
@@ -154,6 +155,7 @@ class SharePoint:
                     os.unlink(file)
                 except PermissionError as error:
                     print(error)
+                    sleep(3)
                     Functions.fechar_excel(file)
                     os.unlink(file)    
 
