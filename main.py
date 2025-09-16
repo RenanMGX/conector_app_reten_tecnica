@@ -17,8 +17,8 @@ class ExecuteAPP:
             sap_user:str, 
             sap_password:str, 
             sap_ambiente:str,
-            sharepoint_email:str,
-            sharepoint_password:str,
+            azure_client_id:str,
+            azure_client_secret:str,
             sharepoint_url:str,
             sharepoint_lista:str,
         ):
@@ -67,8 +67,8 @@ class ExecuteAPP:
         
         print(P("Iniciando api do Sharepoint"))
         sharepoint = SharePoint(
-                sharepoint_email=sharepoint_email,
-                sharepoint_password=sharepoint_password,
+                client_id=azure_client_id,
+                client_secret=azure_client_secret,
                 sharepoint_url=sharepoint_url,
                 sharepoint_lista=sharepoint_lista
             )
@@ -117,9 +117,9 @@ class ExecuteAPP:
 if __name__ == "__main__":
     from patrimar_dependencies.credenciais import Credential
     
-    crd_sharepoint:dict = Credential(
+    crd_azure:dict = Credential(
         path_raiz=SharePointFolders(r'RPA - Dados\CRD\.patrimar_rpa\credenciais').value,
-        name_file="Microsoft-RPA"
+        name_file="Azure-APP-RetencaoTecnica"
     ).load()
     
     crd_sap:dict = Credential(
@@ -129,8 +129,8 @@ if __name__ == "__main__":
     
     ExecuteAPP.start(
         target_folder_path=r'\\server008\G\ARQ_PATRIMAR\WORK\Notas Fiscais Digitalizadas\RETENÇÃO TÉCNICA',
-        sharepoint_email=crd_sharepoint['email'],
-        sharepoint_password=crd_sharepoint['password'],
+        azure_client_id=crd_azure['client_id'],
+        azure_client_secret=crd_azure['client_secret'],
         sharepoint_url="https://patrimar.sharepoint.com/sites/controle",
         sharepoint_lista="RetencaoTecnica",
         sap_user=crd_sap['user'],

@@ -7,6 +7,7 @@ from office365.runtime.auth.authentication_context import AuthenticationContext
 from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.listitems.collection import ListItemCollection
 from office365.runtime.paths.resource_path import ResourcePath
+from office365.runtime.auth.client_credential import ClientCredential
 from time import sleep
 
 class SharePoint:
@@ -25,15 +26,11 @@ class SharePoint:
             os.makedirs(download_path)
         return download_path
     
-    def __init__(self, *, sharepoint_email:str, sharepoint_password:str, sharepoint_url:str, sharepoint_lista:str) -> None:        
+    def __init__(self, *, client_id:str, client_secret:str, sharepoint_url:str, sharepoint_lista:str) -> None:        
         url = sharepoint_url
         lista = sharepoint_lista
         
-        self.__ctx_auth = AuthenticationContext(url)
-        if self.__ctx_auth.acquire_token_for_user(sharepoint_email, sharepoint_password):
-            self.__ctx = ClientContext(url, self.__ctx_auth)
-        else:
-            raise PermissionError("não foi possivel acessar a lista")
+        self.__ctx = ClientContext(url).with_credentials(ClientCredential(client_id, client_secret))
         
         self.__lista = self.__ctx.web.lists.get_by_title(lista)
         

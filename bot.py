@@ -57,6 +57,12 @@ class Processos:
 class Execute:
     @staticmethod
     def start():
+        crd_param = execution.parameters.get("crd")
+        if not isinstance(crd_param, str):
+            raise ValueError("Parâmetro 'crd_param' deve ser uma string representando o label da credencial.")
+        else:
+            crd_param = str(crd_param)
+            
         sharepoint_url_param = execution.parameters.get("sharepoint_url")
         if not sharepoint_url_param:
             raise Exception("o parametro sharepoint_url não foi preenchido!")
@@ -72,8 +78,8 @@ class Execute:
         ExecuteAPP.start(
             maestro=maestro,
             target_folder_path=str(target_folder_path_param),
-            sharepoint_email=maestro.get_credential(label="Microsoft-RPA", key="email"),
-            sharepoint_password=maestro.get_credential(label="Microsoft-RPA", key="password"),
+            azure_client_id=maestro.get_credential(label=crd_param, key="client_id"),
+            azure_client_secret=maestro.get_credential(label=crd_param, key="client_secret"),
             sharepoint_url=str(sharepoint_url_param),
             sharepoint_lista=str(sharepoint_lista_param),
             sap_user=maestro.get_credential(label="SAP_PRD", key="user"),
