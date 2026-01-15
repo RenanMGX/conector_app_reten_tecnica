@@ -127,6 +127,13 @@ if __name__ == "__main__":
         name_file="SAP_PRD"
     ).load()
     
+    print(Credential(
+        path_raiz=SharePointFolders(r'RPA - Dados\CRD\.patrimar_rpa\credenciais').value,
+        name_file="GeminiIA-Token-Default"
+    ).load())
+
+    import sys; sys.exit()
+    
     ExecuteAPP.start(
         target_folder_path=r'\\server008\G\ARQ_PATRIMAR\WORK\Notas Fiscais Digitalizadas\RETENÇÃO TÉCNICA',
         azure_client_id=crd_azure['client_id'],

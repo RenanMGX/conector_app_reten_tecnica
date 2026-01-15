@@ -24,6 +24,8 @@ class Codigo:
     def divisao(self) -> str:
         if (x:=re.search(r'(?<=_)[A-z]{1}[0-9]{3}', self.file_name)):
             return x.group()
+        elif (x:=re.search(r'(?<=[0-9]_)[A-z0-9]{1}[0-9]{3}', self.file_name)):
+            return x.group()
         return ""
     
     @property
